@@ -13,7 +13,7 @@ var findup = require('findup-sync');
 var available_colors = [
   'yellow',
   'cyan',
-  'white',
+  'green',
   'magenta',
   'grey',
   'blue'
