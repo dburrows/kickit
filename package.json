@@ -1,0 +1,45 @@
+{
+  "name": "kickit",
+  "version": "0.0.1",
+  "description": "a cli",
+  "preferGlobal": true,
+  "bin": {
+    "kickit": "bin/kickit"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dburrows/kickit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dburrows/kickit/issues"
+  },
+  "keywords": [
+    "shell",
+    "process",
+    "entry",
+    "spawn",
+    "utility"
+  ],
+  "author": "David Burrows <david@designsuperbuild> (http://www.designsuperbuild.com/)",
+  "license": "BSD",
+  "contributors": [
+    {
+      "name": "Ollie Relph",
+      "email": "ollie@mammal.io"
+    },
+    {
+      "name": "Nick Cartwright",
+      "email": "nick@mammal.io"
+    }
+  ],
+  "dependencies": {
+    "colors": "^0.6.2",
+    "findup-sync": "^0.1.3",
+    "minimist": "^0.2.0",
+    "q": "^1.0.1"
+  },
+  "homepage": "https://github.com/dburrows/kickit"
+}
