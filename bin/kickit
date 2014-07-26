@@ -1,117 +1,82 @@
 #!/usr/bin/env node
-
-var Q = require('q');
+var debug = require('debug')('kickit');
+var program = require('commander');
+var Promise = require('bluebird');
 var fs = require('fs');
-var colors = require('colors');
-var exec = require('child_process').exec;
+var findup = require('findup-sync');
+var chalk = require('chalk');
+var exec = Promise.promisify(require('child_process').exec);
 var spawn = require('child_process').spawn;
-var argv = require('minimist')(process.argv.slice(2));
 var path = require('path');
 
-var findup = require('findup-sync');
+
+var version = require('../package.json').version;
 
 var available_colors = [
-  'yellow',
-  'cyan',
   'green',
+  'yellow',
+  'blue',
   'magenta',
-  'grey',
-  'blue'
+  'cyan',
+  'gray'
 ];
 
-var env = ( typeof argv.env === 'string' ) ? path.resolve(argv.env) : findup('.env');
-var childProcesses = ( typeof argv.config === 'string' ) ? path.resolve(argv.config) : findup('entry.json');
+program
+  .version(version)
+  .option('-c, --config <path>', 'config file path')
+  .option('-e, --env <path>', 'environment file path')
+  .parse(process.argv);
 
-console.log('\nenv:\t%s\nconfig:\t%s\n', env, childProcesses);
- 
-if ( !childProcesses ) {
-  console.log('Unable to find local entry.json\n');
-  process.exit(99);
-}
+debug('config file: %s', program.config);
+debug('env file: %s', program.env);
 
-childProcesses = require(childProcesses);
+var childProcesses = require( validateConfigFile(program.config) );
+var envFilePath = validateEnvFile(program.env);
 
 var completed = [];
 
-setEnv()
-.then(spawnProcesses)
+setEnv(envFilePath)
+.then(spawnProcesses(childProcesses))
 .then(pipeStdIn)
-.fail(function( err ) {
-  console.log('somehting wrong:', err);
+.catch(function( err ) {
+  console.log('something wrong:', err);
 });
- 
-function setEnv() {
-  var deferred = Q.defer();
 
-  if (!env) {
-    deferred.resolve();
+function validateConfigFile(configPath) {
+  var fp = configPath ? path.resolve(configPath) : findup('entry.json');
+  if (fp && fs.existsSync(fp)) {
+    return fp;
   } else {
-    exec('source ' + env + ' && printenv', { cwd: env.replace(/\/.*/, '') }, function( err, stdout, stderr ) {
-      if ( err ) {
-        throw new Error(err);
-      }
+    terminateProgram('Unable to find config file\n');
+  }
+}
 
+function validateEnvFile(envFilePath) {
+  var fp = envFilePath ? path.resolve(envFilePath) : undefined;
+  if (fp && !fs.existsSync(fp)) {
+    terminateProgram('Unable to find env file\n');
+  } else {
+    return fp;
+  }
+}
+
+function setEnv(envFilePath) {
+  if (!envFilePath) {
+    return Promise.resolve();
+  } else {
+    return exec('source ' + envFilePath + ' && printenv', { cwd: envFilePath.replace(/\/.*/, '') })
+    .then( function(stdout, stderr) {
       stdout.split('\n').forEach(function( line ) {
         var parts = line.split('=');
         process.env[ parts[0] ] = parts[1];
       });
-
-      deferred.resolve();
+      return;
     });
   }
-
-  return deferred.promise;
 }
 
-function commandExists(cp) {
-  var deferred = Q.defer();
 
-  exec('command -v ' + cp.spawn.command + ' >/dev/null 2>&1 || { echo >&2; exit 1; }', function (error, stdout, stderr) {
-    if (error !== null) {
-      console.log(('Error: ' + cp.handle + ' does not exist').red);
-      process.exit();
-    }
-    deferred.resolve();
-  });
-
-  return deferred.promise;
-}
-
-function spawnProcess(cp, i) {
-  // check to see if the bin exists
-  commandExists(cp)
-  .then(function() {
-    cp.process = spawn(cp.spawn.command, cp.spawn.args);
-    
-    [ 'stdout', 'stderr' ].forEach(function( str ) {
-      cp.process[ str ].on('data', function( data ) {
-        process[ str ].write(
-            data.toString('utf8')
-            .replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
-              return group1 + ( cp.handle + ': ' )[available_colors[i % available_colors.length]] + group2;
-            }));
-      })
-      .on('close', function ( code, signal ) {
-        if (completed.indexOf(cp.handle) < 0) {
-          completed.push(cp.handle);
-          process.stdout.write(('------------------\n')[available_colors[i % available_colors.length]]);
-          process.stdout.write(
-            ( cp.handle + ': completed\n' )[available_colors[i % available_colors.length]]
-          );
-          process.stdout.write(('------------------\n')[available_colors[i % available_colors.length]]);
-
-          childProcesses.forEach(function( cp2, i2 ) {
-            if (cp2.hasOwnProperty('waitOn') && cp2.waitOn === cp.handle) {
-              spawnProcess(cp2, i2);
-            }
-          });
-        }
-      });
-    });
-  });
-}
-
-function spawnProcesses() {
+function spawnProcesses(childProcesses) {
   // generic stdout & stderr
   childProcesses.forEach(function( cp, i ) {
     if (!cp.hasOwnProperty('waitOn')) {
@@ -119,6 +84,7 @@ function spawnProcesses() {
     }
   });
 }
+
 
 function pipeStdIn() {
   process.stdin.resume();
@@ -135,4 +101,54 @@ function pipeStdIn() {
     var cmd = s.substring(cp.stdinPrefix.length + 1);
     cp.process.stdin.write(cmd);
   });
+}
+
+function spawnProcess(cp, i) {
+  // check to see if the bin exists
+  commandExists(cp)
+  .then(function() {
+    cp.process = spawn(cp.spawn.command, cp.spawn.args);
+    [ 'stdout', 'stderr' ].forEach(function( str ) {
+      cp.process[ str ].on('data', function( data ) {
+        process[ str ].write( 
+          data.toString('utf8')
+          .replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
+            return chalk[available_colors[i % available_colors.length]](group1 + ( cp.handle + ': ' ) + group2);
+          })
+        );
+      })
+      .on('error', function(err) {
+        process.stdout.write( chalk[available_colors[i % available_colors.length]]( cp.handle + ': error\n' + err) );
+      })
+      .on('close', function ( code, signal ) {
+        if (completed.indexOf(cp.handle) < 0) {
+          completed.push(cp.handle);
+          process.stdout.write(
+            chalk[available_colors[i % available_colors.length]]( cp.handle + ': completed\n' )
+          );
+          childProcesses.forEach(function( cp2, i2 ) {
+            if (cp2.hasOwnProperty('waitOn') && cp2.waitOn === cp.handle) {
+              spawnProcess(cp2, i2);
+            }
+          });
+          if (completed.length === childProcesses.length) {
+            process.exit();
+          }
+        }
+      });
+    });
+  })
+  .catch(function(e) {
+    console.log(chalk.red("Command %s failed to start:"),chalk.bold(cp.spawn.command)); 
+    console.log(e.stack);
+  });
+}
+
+function commandExists(cp) {
+  return exec('command -v ' + cp.spawn.command + ' >/dev/null 2>&1 || { echo >&2; exit 1; }');
+}
+
+function terminateProgram(msg) {
+  console.log(chalk.red(msg));
+  process.exit(99);
 }
