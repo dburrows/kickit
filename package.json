@@ -36,10 +36,11 @@
     }
   ],
   "dependencies": {
-    "colors": "^0.6.2",
-    "findup-sync": "^0.1.3",
-    "minimist": "^0.2.0",
-    "q": "^1.0.1"
+    "bluebird": "^2.2.2",
+    "chalk": "^0.5.1",
+    "commander": "^2.3.0",
+    "debug": "^1.0.4",
+    "findup-sync": "^0.1.3"
   },
   "homepage": "https://github.com/dburrows/kickit"
 }
