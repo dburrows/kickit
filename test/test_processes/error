@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+setTimeout(function() {
+  process.exit(1);
+}, 2000);
