@@ -1,7 +1,7 @@
 {
   "name": "kickit",
   "version": "0.0.4-alpha",
-  "description": "a cli",
+  "description": "A command-line tool to start multiple long-running shell processes",
   "preferGlobal": true,
   "bin": {
     "kickit": "bin/kickit"
