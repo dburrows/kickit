@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var _ = require('lodash');
+var extend = require('extend');
 var debug = require('debug')('kickit');
 var program = require('commander');
 var Promise = require('bluebird');
@@ -111,7 +111,7 @@ function spawnProcess(cp, i) {
   .then(function() {
     console.log(colorizeMsg(i, cp.handle + ': start'));
 
-    var envars = _.extend(process.env, cp.spawn.env);
+    var envars = extend(process.env, cp.spawn.env);
     cp.process = spawn(cp.spawn.command, cp.spawn.args, { env: envars, cwd: cp.spawn.cwd});
     
     [ 'stdout', 'stderr' ].forEach(function( str ) {
