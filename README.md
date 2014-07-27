@@ -26,7 +26,7 @@ Run `kickit` in a directory, it will either use the config & env you've passed i
 
 It'll look for `kickfile.js` in the same way Node `require` does e.g. start in the cwd and travel up your directory tree, using the first kickfile.js it finds. 
 
-It'll only look for a `.env` the current working directory. 
+It'll only look for a `.env` file in the current working directory. 
 
 See below for env and config file formats.
 
