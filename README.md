@@ -1,6 +1,7 @@
 # kickit
 
-A command-line tool to start multiple long-running shell processes  
+A command-line tool to start multiple long-running shell processes - similar to Ruby's Foreman gem but kickit allows you to chain task execution e.g. run `grunt dist` first then when it has completed run `node server.js` 
+
 Initially based on code from mammal-dev/entry: https://github.com/mammaldev/entry
 
 
@@ -109,6 +110,7 @@ BLUEBIRD_DEBUG=1 kickit
 
 ## ToDo
 
+* Modularise code
 * Tests
 
 > "Can I kick it?"  
