@@ -1,0 +1,5 @@
+# rename this file to .env for kickit to pick up automatically
+export EXAMPLE_PORT=3232
+export EXAMPLE_HOST='localhost'
+export EXAMPLE_ACCESS_KEY='123-456-789'
+export EXAMPLE_SECRET="987-654-321"
