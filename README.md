@@ -1,7 +1,6 @@
 # kickit
 
-"Can I kick it?"
-"Yes you can"
+"Kick it!"
 
 based on mammal-dev/entry: https://github.com/mammaldev/entry
 
@@ -19,3 +18,6 @@ Uses [debug](https://github.com/visionmedia/debug), just set the `DEBUG` env var
 User [bluebird](https://github.com/petkaantonov/bluebird), turn on long stack trace by setting the `BLUEBIRD_DEBUG` env var to 1, eg:
 
     BLUEBIRD_DEBUG=1 kickit
+
+"Can I kick it?"
+"Yes you can"
