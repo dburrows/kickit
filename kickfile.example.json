@@ -1,0 +1,28 @@
+[
+  {
+    "handle": "sleep",
+    "spawn": {
+      "command": "sleep",
+      "args": [ "2" ]
+    },
+    "stdinPrefix": "sleep"
+  },
+  {
+    "handle": "cani",
+    "spawn": {
+      "command": "echo",
+      "args": [ "'Can I Kick It?'" ]
+    },
+    "stdinPrefix": "nd",
+    "waitOn": "sleep"
+  },
+  {
+    "handle": "yes",
+    "spawn": {
+      "command": "echo",
+      "args": [ "'Yes You Can!'" ]
+    },
+    "stdinPrefix": "nd",
+    "waitOn": "cani"
+  }
+]
