@@ -1,10 +1,8 @@
 # kickit
 
-"Kick it!"
-
-A command-line tool to start multiple long-running shell processes
-
+A command-line tool to start multiple long-running shell processes  
 Initially based on code from mammal-dev/entry: https://github.com/mammaldev/entry
+
 
 ## Install
 
@@ -24,7 +22,7 @@ Options:
  -e, --env <path>     environment file path
 ```
 
-Run `kickit` in a directory, it will either use the config & env you've passed in or try and find `kickfile.js` & `.env` automatically.
+Run `kickit` in a directory, it will either use the config & env you've passed in via options or try and find `kickfile.js` & `.env` automatically.
 
 It'll look for `kickfile.js` in the same way Node `require` does e.g. start in the cwd and travel up your directory tree, using the first kickfile.js it finds. 
 
@@ -43,10 +41,9 @@ A json file with an array of process objects, each process object has following 
   * __env__:      object, key is env var name, val is value  
 * __waitOn__: wait for the process with this handle to finish before running
 
-The following file will run _sleep_ first, when _sleep_ has completed it will run the _cani_ and also run the _server_ process and pass the env vars through to the server
+The following file will run `sleep` first, when it has completed it will run the `cani` process and the `server` process and pass the env vars through to the server
 
 ```json
-// ./kickfile.json
 [
   {
     "handle": "sleep",
