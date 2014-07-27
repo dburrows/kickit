@@ -1,6 +1,6 @@
 {
   "name": "kickit",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "a cli",
   "preferGlobal": true,
   "bin": {
@@ -40,7 +40,11 @@
     "chalk": "^0.5.1",
     "commander": "^2.3.0",
     "debug": "^1.0.4",
-    "findup-sync": "^0.1.3"
+    "findup-sync": "^0.1.3",
+    "lodash": "^2.4.1"
   },
-  "homepage": "https://github.com/dburrows/kickit"
+  "homepage": "https://github.com/dburrows/kickit",
+  "devDependencies": {
+    "express": "^4.7.1"
+  }
 }
