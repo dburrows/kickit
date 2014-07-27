@@ -106,11 +106,10 @@ Uses [bluebird](https://github.com/petkaantonov/bluebird), turn on long stack tr
 BLUEBIRD_DEBUG=1 kickit
 ```
 
----
-
-"Can I kick it?"  
-"Yes you can"
 
 ## ToDo
 
 * Tests
+
+> "Can I kick it?"  
+> "Yes you can"
