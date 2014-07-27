@@ -2,9 +2,9 @@
 
 "Kick it!"
 
----
+A command-line tool to start multiple long-running shell processes
 
-Based on mammal-dev/entry: https://github.com/mammaldev/entry
+Initially based on code from mammal-dev/entry: https://github.com/mammaldev/entry
 
 ## Install
 
@@ -114,6 +114,6 @@ BLUEBIRD_DEBUG=1 kickit
 "Can I kick it?"  
 "Yes you can"
 
-## TODO
+## ToDo
 
 * Tests
