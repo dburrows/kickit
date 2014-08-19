@@ -31,7 +31,7 @@ It'll only look for a `.env` file in the current working directory.
 
 See below for env and config file formats.
 
-## `kickit.json` config file 
+## `kickfile.json` config file 
 
 A json file with an array of process objects, each process object has following values:
 
