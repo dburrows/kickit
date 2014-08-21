@@ -3,6 +3,7 @@ var http = require('http');
 var port = 1337;
 
 console.log('EXAMPLE_ACCESS_KEY from .env file: ',process.env.EXAMPLE_ACCESS_KEY);
+console.warn("Test Warning Message to stderr");
 
 http.createServer(function(req, res) {
   res.writeHead(200, {

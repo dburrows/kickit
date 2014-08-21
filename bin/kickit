@@ -137,16 +137,23 @@ function spawnProcess(cp, i) {
 
     var envars = extend(process.env, cp.spawn.env);
     cp.process = spawn(cp.spawn.command, cp.spawn.args, { env: envars, cwd: cp.spawn.cwd});
-    
-    [ 'stdout', 'stderr' ].forEach(function( str ) {
-      cp.process[ str ].on('data', function( data ) {
-        process[ str ].write( 
-          data.toString('utf8')
-          .replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
-            return colorizeMsg(i, group1 + ( cp.handle + ': ' )) + group2;
-          })
-        );
-      });
+
+    cp.process.stdout.on('data', function( data ) {
+      process.stdout.write( 
+        data.toString('utf8')
+        .replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
+          return colorizeMsg(i, group1 + ( cp.handle + ': ' )) + group2;
+        })
+      );
+    });
+
+    cp.process.stderr.on('data', function( data ) {
+      process.stderr.write( 
+        data.toString('utf8')
+        .replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
+          return colorizeMsg(i, group1 + ( cp.handle + ': ' )) + chalk.red(group2);
+        })
+      );
     });
 
     cp.process.on('error', function(err) { 
