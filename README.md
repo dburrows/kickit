@@ -23,15 +23,15 @@ Options:
  -e, --env <path>     environment file path
 ```
 
-Run `kickit` in a directory, it will either use the config & env you've passed in via options or try and find `kickfile.js` & `.env` automatically.
+Run `kickit` in a directory, it will either use the config & env you've passed in via options or try and find `kickfile.json` & `.env` automatically.
 
-It'll look for `kickfile.js` in the same way Node `require` does e.g. start in the cwd and travel up your directory tree, using the first kickfile.js it finds. 
+It'll look for `kickfile.json` in the same way Node `require` does e.g. start in the cwd and travel up your directory tree, using the first `kickfile.json` it finds. 
 
 It'll only look for a `.env` file in the current working directory. 
 
 See below for env and config file formats.
 
-## `kickit.json` config file 
+## `kickfile.json` config file 
 
 A json file with an array of process objects, each process object has following values:
 
