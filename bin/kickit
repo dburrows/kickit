@@ -27,6 +27,10 @@ var availableColors = [
   'gray'
 ];
 
+// some escape sequences do things like return to the start of the line
+// so they delete the process label, let's remove them
+var troublesomeEscapeSequences = /\u001b\[0m|\u001b\[2K|\u001b\[0G/g;
+
 program
   .version(version)
   .option('-c, --config <path>', 'config file path')
@@ -164,6 +168,7 @@ function spawnProcess(cp, i) {
     cp.process.stdout.on('data', function( data ) {
       process.stdout.write(
         data.toString('utf8')
+        .replace(troublesomeEscapeSequences, '')
         .replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
           return colorizeMsg(i, group1 + ( cp.handle + ': ' )) + group2;
         })
@@ -173,6 +178,7 @@ function spawnProcess(cp, i) {
     cp.process.stderr.on('data', function( data ) {
       process.stderr.write(
         data.toString('utf8')
+        .replace(troublesomeEscapeSequences, '')
         .replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
           return colorizeMsg(i, group1 + ( cp.handle + ': ' )) + chalk.red(group2);
         })
