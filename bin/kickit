@@ -27,9 +27,72 @@ var availableColors = [
   'gray'
 ];
 
+// \u001b - <Esc> char
+// <ESC>[0m - Reset all Display attributes
+// <ESC>[0G - Cursor to left edge.
+// <ESC>[2K - Erase line
 // some escape sequences do things like return to the start of the line
-// so they delete the process label, let's remove them
+// so they delete the process label, we'll remove them with this regex
 var troublesomeEscapeSequences = /\u001b\[0m|\u001b\[2K|\u001b\[0G/g;
+var fakeCR = /\u001b\[2K\u001b\[0G/g;
+
+
+// naive implementation of buffered output
+// which we need to make our regexes work properly
+var outBuffer = '';
+
+var buffers = {};
+
+//.replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
+
+function _writeBuffers() {
+  Object.keys(buffers).forEach(function(key, index) {
+    var bufferedData =  buffers[key];
+    if (bufferedData ) {
+      process.stdout.write( outFormat(key, index, bufferedData) );
+      buffers[key] = '';
+    }
+  });
+}
+
+var writeBuffers = _.debounce(_writeBuffers, 500, {}, 1000)
+
+function outFormat(key, index, string) {
+  var prefix = colorizeMsg(index, key + ': ')
+
+  // @TODO this is not perfect, but not sure if we can remove more newlines without
+  //       damaging input formatting
+  var outStr = '\n' + string
+
+  return outStr
+    .replace(/\n*\x1b\[2K\s*\x1b\[0G\n*/g, '\n')
+    .replace(/\n+/g, '\n' + prefix)
+    .replace( /\u001b\[2K|\u001b\[0G/g, '' );
+
+}
+
+// function outFormat(key, index, string) {
+//   var prefix = colorizeMsg(index, key + ': ')
+
+//   return string
+//     .replace(/\x1b\[2K\s*\x1b\[0G/g, '\n')
+//     .replace( /\u001b\[0m|\u001b\[2K|\u001b\[0G/g, '' )
+//     .replace(/^/, '\n')
+//     .replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
+//       return colorizeMsg(index, group1 + ( key + ': ' )) + group2;
+//     })
+// }
+
+function bufferWrite(handle, data) {
+  if (data === '') { return };
+  buffers[handle] = buffers[handle] || "";
+  buffers[handle] = buffers[handle] + data;
+  writeBuffers();
+};
+
+
+
+
 
 program
   .version(version)
@@ -66,6 +129,7 @@ function exitHandler(options, err) {
   }
 
   if (options.exit) {
+    process.stdout.write('\u001b[0m\n');
     process.exit();
   }
 }
@@ -83,7 +147,12 @@ process.on( 'uncaughtException', exitHandler.bind(null, { exit: true }));
 // functions
 
 function validateConfigFile(configPath) {
-  var fp = configPath ? path.resolve(configPath) : findup('kickfile.json');
+
+  var json = configPath ? path.resolve(configPath) : findup('kickfile.json');
+  var js = configPath ? path.resolve(configPath) : findup('kickfile.js');
+
+  var fp = js || json;
+
   if (fp && fs.existsSync(fp)) {
     return fp;
   } else {
@@ -147,10 +216,11 @@ function pipeStdIn() {
 }
 
 function spawnProcess(cp, i) {
+  _writeBuffers();
   // check to see if the bin exists
   commandExists(cp)
   .then(function() {
-    console.log(colorizeMsg(i, cp.handle + ' START'));
+    bufferWrite(cp.handle, '\n>>> START');
 
     var envars = extend(process.env, cp.spawn.env);
     var defaultArgs = ['-q', '/dev/null', cp.spawn.command];
@@ -166,23 +236,11 @@ function spawnProcess(cp, i) {
     );
 
     cp.process.stdout.on('data', function( data ) {
-      process.stdout.write(
-        data.toString('utf8')
-        .replace(troublesomeEscapeSequences, '')
-        .replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
-          return colorizeMsg(i, group1 + ( cp.handle + ': ' )) + group2;
-        })
-      );
+      bufferWrite(cp.handle, data.toString('utf8'));
     });
 
     cp.process.stderr.on('data', function( data ) {
-      process.stderr.write(
-        data.toString('utf8')
-        .replace(troublesomeEscapeSequences, '')
-        .replace(/(^|\n)([^\n]+)/g, function( match, group1, group2 ) {
-          return colorizeMsg(i, group1 + ( cp.handle + ': ' )) + chalk.red(group2);
-        })
-      );
+      bufferWrite(cp.handle, data.toString('utf8'));
     });
 
     cp.process.on('error', function(err) {
@@ -197,9 +255,7 @@ function spawnProcess(cp, i) {
           chalk.red('Exited with error code: ' + code + '\n')
         );
       } else {
-         process.stdout.write(
-          colorizeMsg(i, cp.handle + ': FINISH\n')
-        );
+         bufferWrite(cp.handle, '\n>>> FINISH');
       }
 
       if (completedProcesses.indexOf(cp.handle) < 0) {
